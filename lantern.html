@@ -42,6 +42,8 @@
     .hud .range{width:140px}
     .credit{position:absolute;right:12px;bottom:12px;color:rgba(255,255,255,0.55);font-size:13px;z-index:6}
     .title{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font-family:'Brush Script MT',cursive;font-size:70px;color:#ffe8b3;text-shadow:0 0 20px rgba(255,255,200,0.4),0 0 40px rgba(255,240,200,0.2);z-index:5;white-space:nowrap}
+    .moon-small{position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#f9e58a 60%,#e6b84c 100%);box-shadow:0 0 25px #ffd700,0 0 50px #ffb300;animation:spin 6s linear infinite;z-index:1000;}
+    @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
   </style>
 </head>
 <body>
@@ -58,6 +60,18 @@
     </div>
     <div class="credit">Được làm bởi banglegen</div>
   </div>
+
+  <!-- 🌙 Trăng nhỏ hiển thị khi nhạc đang phát -->
+  <div class="moon-small"></div>
+
+  <!-- 🎵 Nhạc nền -->
+  <audio id="bgm" src="https://raw.githubusercontent.com/banglegen/Trung-Thu-2025/main/Tr%C3%B2%20Ch%C6%A1i%20Th%C3%A1p%20R%C6%A1i%20T%E1%BB%B1%20Do.mp3" autoplay loop></audio>
+
+  <script>
+    const audio=document.getElementById('bgm');
+    audio.volume=0.3; // âm lượng nhẹ
+  </script>
+
   <script>
     function createLantern(xPct,yPct,zOffset,color,ringSize){
       const wrap=document.createElement('div');wrap.className='lantern';wrap.style.left=xPct+'%';wrap.style.top=yPct+'%';wrap.style.transform=`translate3d(-50%,-50%,${zOffset}px) rotateX(12deg)`;
@@ -65,7 +79,7 @@
       const bandBot=document.createElement('div');bandBot.className='band bottom';wrap.appendChild(bandBot);
       const ring=document.createElement('div');ring.style.width=ringSize+'px';ring.style.height='160px';const faces=18;
       for(let i=0;i<faces;i++){const f=document.createElement('div');const angle=(360/faces)*i;f.style.position='absolute';f.style.left='50%';f.style.top='0';f.style.transformOrigin='0 50%';f.style.width=ringSize*0.65+'px';f.style.height=Math.max(120,ringSize*1.2)+'px';f.style.borderRadius='50px/80px';f.style.background=`linear-gradient(180deg,${color},rgba(0,0,0,0.12))`;f.style.boxShadow='var(--glow)';f.style.transform=`rotateY(${angle}deg) translateZ(${ringSize/2}px)`;ring.appendChild(f);}wrap.appendChild(ring);
-      const tassel=document.createElement('div');tassel.className='tassel';tassel.innerHTML='<div class="stick"></div><div class="strings"><span></span><span></span><span></span></div>';wrap.appendChild(tassel);
+      const tassel=document.createElement('div');tassel.className='tassel';tassel.innerHTML='<div class=\"stick\"></div><div class=\"strings\"><span></span><span></span><span></span></div>';wrap.appendChild(tassel);
       wrap.style.animationDelay=Math.random()*2+'s';return wrap;}
     const lanternsContainer=document.getElementById('lanterns');const colorInput=document.getElementById('color');const sizeRange=document.getElementById('size');const addBtn=document.getElementById('addLantern');const clearBtn=document.getElementById('clearLanterns');
     const initial=[{x:36,y:44,z:30},{x:62,y:52,z:10},{x:48,y:34,z:60}];initial.forEach(p=>{const l=createLantern(p.x,p.y,p.z,colorInput.value,parseInt(sizeRange.value));lanternsContainer.appendChild(l);});
