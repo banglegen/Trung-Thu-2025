@@ -15,6 +15,7 @@
       --glow:0 0 30px rgba(255,170,120,0.12),0 6px 40px rgba(0,0,0,0.6);
       --font:'Inter',system-ui;
     }
+
     html,body{height:100%;margin:0;font-family:var(--font);background:linear-gradient(180deg,var(--bg) 0%,#071025 70%);overflow:hidden;color:#fff}
     .scene{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;perspective:1200px;position:relative;user-select:none}
     canvas#stars{position:absolute;inset:0;z-index:0}
@@ -40,11 +41,26 @@
     .hud label{font-size:13px;opacity:.95}
     .hud input[type=color]{width:44px;height:36px;border:0;background:none;padding:0;margin-left:8px}
     .hud .range{width:140px}
-    .credit{position:absolute;right:12px;bottom:12px;color:rgba(255,255,255,0.55);font-size:13px;z-index:6}
+    .credit{position:absolute;left:12px;bottom:12px;color:rgba(255,255,255,0.55);font-size:13px;z-index:6}
     .title{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font-family:'Brush Script MT',cursive;font-size:70px;color:#ffe8b3;text-shadow:0 0 20px rgba(255,255,200,0.4),0 0 40px rgba(255,240,200,0.2);z-index:5;white-space:nowrap}
     .moon-small{position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#f9e58a 60%,#e6b84c 100%);box-shadow:0 0 25px #ffd700,0 0 50px #ffb300;animation:spin 6s linear infinite;z-index:1000;}
     @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-    #playBtn{position:fixed;top:20px;left:20px;z-index:1000;padding:8px 14px;background:#ffcc66;border:none;border-radius:6px;color:#000;font-weight:bold;cursor:pointer;}
+
+    /* Nút bật nhạc */
+    #playBtn{
+      position:fixed;
+      top:8vh;       
+      right:8vw;
+      z-index:1001;
+      padding:8px 14px;
+      background:#ffcc66;
+      border:none;
+      border-radius:6px;
+      color:#000;
+      font-weight:bold;
+      cursor:pointer;
+      display:none;
+    }
   </style>
 </head>
 <body>
@@ -62,15 +78,67 @@
     <div class="credit">Được làm bởi banglegen</div>
   </div>
 
-  <!-- Trăng nhỏ -->
+  <!-- Trăng nhỏ hiển thị -->
   <div class="moon-small"></div>
+
+  <!-- Nhạc nền -->
+  <audio id="bgm" src="https://raw.githubusercontent.com/banglegen/Trung-Thu-2025/main/Tr%C3%B2%20Ch%C6%A1i%20Th%C3%A1p%20R%C6%A1i%20T%E1%BB%B1%20Do.mp3" loop></audio>
 
   <!-- Nút bật nhạc -->
   <button id="playBtn">▶ Bật nhạc</button>
 
-  <!-- Audio -->
-  <audio id="bgm" src="https://raw.githubusercontent.com/banglegen/Trung-Thu-2025/main/Tr%C3%B2%20Chơi%20Tháp%20Rơi%20T%E1%BB%B1%20Do.mp3" loop></audio>
-
   <script>
     const audio = document.getElementById('bgm');
-    const playBtn = document.getElementBy
+    const playBtn = document.getElementById('playBtn');
+    audio.volume = 0.3;
+
+    // Thử autoplay, nếu bị chặn -> hiện nút
+    audio.play().catch(() => {
+      playBtn.style.display = 'block';
+    });
+
+    playBtn.onclick = () => {
+      audio.play();
+      playBtn.style.display = 'none';
+    };
+  </script>
+
+  <script>
+    function createLantern(xPct,yPct,zOffset,color,ringSize){
+      const wrap=document.createElement('div');wrap.className='lantern';wrap.style.left=xPct+'%';wrap.style.top=yPct+'%';wrap.style.transform=`translate3d(-50%,-50%,${zOffset}px) rotateX(12deg)`;
+      const bandTop=document.createElement('div');bandTop.className='band';wrap.appendChild(bandTop);
+      const bandBot=document.createElement('div');bandBot.className='band bottom';wrap.appendChild(bandBot);
+      const ring=document.createElement('div');ring.style.width=ringSize+'px';ring.style.height='160px';const faces=18;
+      for(let i=0;i<faces;i++){const f=document.createElement('div');const angle=(360/faces)*i;f.style.position='absolute';f.style.left='50%';f.style.top='0';f.style.transformOrigin='0 50%';f.style.width=ringSize*0.65+'px';f.style.height=Math.max(120,ringSize*1.2)+'px';f.style.borderRadius='50px/80px';f.style.background=`linear-gradient(180deg,${color},rgba(0,0,0,0.12))`;f.style.boxShadow='var(--glow)';f.style.transform=`rotateY(${angle}deg) translateZ(${ringSize/2}px)`;ring.appendChild(f);}
+      wrap.appendChild(ring);
+      const tassel=document.createElement('div');tassel.className='tassel';tassel.innerHTML='<div class="stick"></div><div class="strings"><span></span><span></span><span></span></div>';wrap.appendChild(tassel);
+      wrap.style.animationDelay=Math.random()*2+'s';return wrap;
+    }
+
+    const lanternsContainer=document.getElementById('lanterns');
+    const colorInput=document.getElementById('color');
+    const sizeRange=document.getElementById('size');
+    const addBtn=document.getElementById('addLantern');
+    const clearBtn=document.getElementById('clearLanterns');
+
+    const initial=[{x:36,y:44,z:30},{x:62,y:52,z:10},{x:48,y:34,z:60}];
+    initial.forEach(p=>{const l=createLantern(p.x,p.y,p.z,colorInput.value,parseInt(sizeRange.value));lanternsContainer.appendChild(l);});
+
+    addBtn.onclick=()=>{const x=22+Math.random()*56;const y=26+Math.random()*54;const z=Math.random()*80-20;const l=createLantern(x,y,z,colorInput.value,parseInt(sizeRange.value));lanternsContainer.appendChild(l);}
+    clearBtn.onclick=()=>{lanternsContainer.innerHTML=''}
+    colorInput.addEventListener('input',()=>{const c=colorInput.value;document.documentElement.style.setProperty('--lantern-main',c);document.querySelectorAll('.lantern div').forEach(f=>{if(f.style.background)f.style.background=`linear-gradient(180deg,${c},rgba(0,0,0,0.12))`;});});
+    sizeRange.addEventListener('input',()=>{const v=parseInt(sizeRange.value);document.querySelectorAll('.lantern div').forEach(f=>{if(f.style.width){f.style.width=v*0.65+'px';f.style.height=Math.max(120,v*1.2)+'px';}});});
+
+    const canvas=document.getElementById('stars');
+    const ctx=canvas.getContext('2d');
+    function resize(){canvas.width=innerWidth*devicePixelRatio;canvas.height=innerHeight*devicePixelRatio;canvas.style.width=innerWidth+'px';canvas.style.height=innerHeight+'px';ctx.scale(devicePixelRatio,devicePixelRatio);drawStars();}
+    window.addEventListener('resize',resize);
+    let stars=[];
+    function initStars(){stars=[];const count=Math.floor((innerWidth+innerHeight)/9);for(let i=0;i<count;i++){stars.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.6+0.2,alpha:Math.random()*0.9+0.1,twinkle:Math.random()*1.5});}}
+    function drawStars(t){ctx.clearRect(0,0,canvas.width,canvas.height);stars.forEach((s,idx)=>{const a=s.alpha*(0.7+0.3*Math.sin((t/600)+idx*0.3*s.twinkle));ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,240,${a})`;ctx.fill();});}
+    function animate(time){drawStars(time);const moon=document.querySelector('.moon');moon.style.transform=`translateZ(200px) rotate(${time/12000}deg) rotateX(8deg)`;requestAnimationFrame(animate);}
+    initStars();resize();requestAnimationFrame(animate);
+    window.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='a')addBtn.click();if(e.key.toLowerCase()==='c')clearBtn.click();});
+  </script>
+</body>
+</html>
